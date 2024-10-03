@@ -36,7 +36,7 @@ export const useAllProposals = () => {
         description: proposalStruct.description,
         amount: proposalStruct.amount,
         minRequiredVote: proposalStruct.minVotesToPass,
-        votecount: proposalStruct.voteCount,
+        voteCount: proposalStruct.voteCount,
         deadline: proposalStruct.votingDeadline,
         executed: proposalStruct.executed,
       }));
@@ -75,6 +75,7 @@ export const useMulticallAllProposals = () => {
       // contract interface
 
       const iface = new Interface(ABI);
+
       try {
         const proposalCount = Number(
           await readOnlyProposalContract.proposalCount()
@@ -105,7 +106,7 @@ export const useMulticallAllProposals = () => {
           description: proposalStruct.description,
           amount: proposalStruct.amount,
           minRequiredVote: proposalStruct.minVotesToPass,
-          votecount: proposalStruct.voteCount,
+          voteCount: Number(proposalStruct.voteCount),
           deadline: proposalStruct.votingDeadline,
           executed: proposalStruct.executed,
         }));
@@ -124,33 +125,34 @@ export const useMulticallAllProposals = () => {
   }, [fetchAllProposals]);
 
   const handleCreatedProposalEvent = useCallback(
-    async (
-      proposalId,
-      description,
-      recipient,
-      amount,
-      votingDeadline,
-      minVotesToPass
-      // eventData
-    ) => {
+    (proposalId, description, _, amount, votingDeadline, minVotesToPass) => {
       const newProposal = {
         proposalId,
         description,
         amount,
-        minRequiredVote: Number(minVotesToPass),
-        votecount: 0,
+        minRequiredVote: minVotesToPass,
+        voteCount: 0,
         deadline: votingDeadline,
         executed: false,
       };
       console.log(newProposal);
       // Update the state with the new proposal, prepend it to the list
-      setAllProposals([...allProposals, newProposal]);
-    }
+      setAllProposals((prevProposals) => [...prevProposals, newProposal]);
+    },
+    []
   );
 
-  const handleVotedProposalEvent = useCallback(async (proposalId, voter) => {
-    console.log(proposalId, voter);
-  });
+  const handleVotedProposalEvent = useCallback((proposalId) => {
+    console.log(proposalId);
+    setAllProposals((prevProposals) =>
+      prevProposals.map((proposal) => {
+        console.log(proposal.id,proposalId, proposal.id === Number(proposalId))
+        if (proposal.id === Number(proposalId))
+          return { ...proposal, voteCount: proposal.voteCount + 1 };
+        return proposal;
+      })
+    );
+  }, []);
 
   useEffect(() => {
     readOnlyProposalContract.on("ProposalCreated", handleCreatedProposalEvent);
@@ -164,7 +166,11 @@ export const useMulticallAllProposals = () => {
       );
       readOnlyProposalContract.off("Voted", handleVotedProposalEvent);
     };
-  }, [readOnlyProvider, allProposals]);
+  }, [
+    readOnlyProposalContract,
+    handleCreatedProposalEvent,
+    handleVotedProposalEvent,
+  ]);
 
   return allProposals;
 };

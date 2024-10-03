@@ -7,7 +7,7 @@ const Proposal = ({
   description,
   amount,
   minRequiredVote,
-  votecount,
+  voteCount,
   deadline,
   executed,
 }) => {
@@ -30,7 +30,7 @@ const Proposal = ({
         </Flex>
         <Flex className="flex gap-4">
           <Text>Vote Count:</Text>
-          <Text className="font-bold">{Number(votecount)}</Text>
+          <Text className="font-bold">{Number(voteCount)}</Text>
         </Flex>
         <Flex className="flex gap-4">
           <Text>Deadline:</Text>

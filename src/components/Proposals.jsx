@@ -16,7 +16,7 @@ const Proposals = ({ proposals }) => {
                         amount,
                         description,
                         executed,
-                        votecount,
+                        voteCount,
                     }, index) => (
                         <Proposal
                             key={`${deadline}${minRequiredVote}`}
@@ -26,7 +26,7 @@ const Proposals = ({ proposals }) => {
                             description={description}
                             executed={executed}
                             minRequiredVote={minRequiredVote}
-                            votecount={votecount}
+                            voteCount={voteCount}
                         />
                     )
                 )
