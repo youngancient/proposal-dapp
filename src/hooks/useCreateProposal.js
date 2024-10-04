@@ -5,6 +5,7 @@ import { useAppKitAccount } from "@reown/appkit/react";
 import { useAppKitNetwork } from "@reown/appkit/react";
 import { liskSepoliaNetwork } from "../connection";
 import { parseEther } from "ethers";
+import { ErrorDecoder } from "ethers-decode-error";
 
 const useCreateProposal = () => {
   const contract = useContract(true);
@@ -12,6 +13,8 @@ const useCreateProposal = () => {
   const { chainId } = useAppKitNetwork();
 
   const [isLoading, setIsLoading] = useState(false);
+
+  const errorDecoder = ErrorDecoder.create()
 
   const createProposal = useCallback(
     async (description, recipient, amount, deadline, minVote) => {
@@ -59,8 +62,8 @@ const useCreateProposal = () => {
           return;
         }
       } catch (error) {
-        console.error("error while creating proposal: ", error);
-        toast.error("Proposal Creation errored");
+        const decodedError = await errorDecoder.decode(error);
+        toast.error(decodedError.reason);
       } finally {
         setIsLoading(false);
       }

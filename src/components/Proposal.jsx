@@ -1,6 +1,8 @@
 import { Box, Button, Flex, Text } from "@radix-ui/themes";
 import { formatEther } from "ethers";
 import useVote from "../hooks/useVote";
+import { toast } from "react-toastify";
+import useExecuteProposal from "../hooks/useExecuteProposal";
 
 const Proposal = ({
   id,
@@ -10,11 +12,31 @@ const Proposal = ({
   voteCount,
   deadline,
   executed,
+  isVoted,
+  isDeadlinePassed,
 }) => {
   const { isLoading, vote } = useVote();
+  const { executeProposal, isExecuting } = useExecuteProposal();
+
+  const handleProposalVoteOrExecute = () => {
+    if (executed) {
+      toast.error(`proposal ${id} already executed`);
+      return;
+    }
+    if (voteCount >= minRequiredVote) {
+      executeProposal(id);
+      return;
+    }
+    if (isVoted) {
+      toast.error("More votes needed to execute");
+      return;
+    }
+    vote(id);
+  };
+
   return (
     <Box className="bg-slate-400 rounded-md shadow-sm p-4 w-96">
-      <Text className="text-2xl mb-4">Proposal {id}</Text>
+      <Text className="text-2xl mb-4">Proposal {Number(id)}</Text>
       <Box className="w-full">
         <Flex className="flex gap-4">
           <Text>Description:</Text>
@@ -44,10 +66,34 @@ const Proposal = ({
         </Flex>
       </Box>
       <Button
-        className="bg-blue-500 text-white font-bold w-full mt-4 p-4 rounded-md shadow-sm"
-        onClick={() => vote(id)}
+        className={`${
+            executed 
+            ? "bg-gray-600" : 
+            (voteCount < minRequiredVote) && isDeadlinePassed
+            ? "bg-red-600" 
+            : voteCount >= minRequiredVote
+            ? "bg-green-700"
+            : isVoted
+            ? "bg-blue-900"
+            : "bg-blue-600"
+        } text-white font-bold w-full mt-4 p-4 rounded-md shadow-sm`}
+        onClick={handleProposalVoteOrExecute}
+        disabled={isDeadlinePassed}
       >
-        Vote
+        {executed
+          ? "Executed"
+          : isExecuting
+          ? "Executing": 
+          (voteCount < minRequiredVote) && isDeadlinePassed ? "Expired"
+          : voteCount >= minRequiredVote
+          ? "Execute"
+          : isVoted
+          ? "Waiting"
+          : isLoading
+          ? "Voting..."
+          : isDeadlinePassed
+          ? "Waiting"
+          : "Vote"}
       </Button>
     </Box>
   );

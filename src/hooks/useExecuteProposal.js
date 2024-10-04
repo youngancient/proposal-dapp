@@ -5,16 +5,16 @@ import { toast } from "react-toastify";
 import { liskSepoliaNetwork } from "../connection";
 import { ErrorDecoder } from "ethers-decode-error";
 
-const useVote = () => {
+const useExecuteProposal = () => {
   const contract = useContract(true);
   const { address } = useAppKitAccount();
   const { chainId } = useAppKitNetwork();
 
   const [isLoading, setIsLoading] = useState(false);
 
-  const errorDecoder = ErrorDecoder.create()
+  const errorDecoder = ErrorDecoder.create();
 
-  const vote = useCallback(
+  const executeProposal = useCallback(
     async (id) => {
       if (!id) {
         toast.error("Invalid id");
@@ -35,13 +35,13 @@ const useVote = () => {
       }
       try {
         setIsLoading(true);
-        const estimatedGas = await contract.vote.estimateGas(id);
-        const tx = await contract.vote(id, {
-          gasLimit: (estimatedGas * BigInt(120)) / BigInt(100),
+        const estimateGas = await contract.executeProposal.estimateGas(id);
+        const tx = await contract.executeProposal(id, {
+          gasLimit: (estimateGas * BigInt(120)) / BigInt(100),
         });
-        const reciept = await tx.wait();
-        if (reciept.status === 1) {
-          toast.success(`Voted proposal ${id} successful`);
+        const receipt = await tx.wait();
+        if (receipt.status === 1) {
+          toast.success(`Executed proposal ${id} successful`);
           return;
         }
       } catch (error) {
@@ -54,7 +54,7 @@ const useVote = () => {
     [address, chainId, contract]
   );
 
-  return { vote, isLoading };
+  return { executeProposal, isExecuting: isLoading };
 };
 
-export default useVote;
+export default useExecuteProposal;
