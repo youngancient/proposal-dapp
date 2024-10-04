@@ -200,14 +200,25 @@ export const useMulticallAllProposals = () => {
     );
   }, []);
 
-  const proposalEventHandler = useCallback(() => {}, []);
+  const executeProposalEventHandler = useCallback((proposalId) => {
+    setAllProposals((prevProposals) =>
+      prevProposals.map((proposal) => {
+        if (proposal.id === Number(proposalId))
+          return {
+            ...proposal,
+            executed: true,
+          };
+        return proposal;
+      })
+    );
+  }, []);
 
   useEffect(() => {
     readOnlyProposalContract.on("ProposalCreated", createdProposalEventHandler);
 
     readOnlyProposalContract.on("Voted", votedProposalEventHandler);
 
-    readOnlyProposalContract.on("ProposalExecuted", proposalEventHandler);
+    readOnlyProposalContract.on("ProposalExecuted", executeProposalEventHandler);
 
     return () => {
       readOnlyProposalContract.off(
@@ -216,12 +227,13 @@ export const useMulticallAllProposals = () => {
       );
       readOnlyProposalContract.off("Voted", votedProposalEventHandler);
 
-      readOnlyProposalContract.off("ProposalExecuted", proposalEventHandler);
+      readOnlyProposalContract.off("ProposalExecuted", executeProposalEventHandler);
     };
   }, [
     readOnlyProposalContract,
-    handleCreatedProposalEvent,
-    handleVotedProposalEvent,
+    createdProposalEventHandler,
+    votedProposalEventHandler,
+    executeProposalEventHandler
   ]);
 
   return allProposals;

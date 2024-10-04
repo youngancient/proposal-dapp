@@ -4,6 +4,8 @@ import useVote from "../hooks/useVote";
 import { toast } from "react-toastify";
 import useExecuteProposal from "../hooks/useExecuteProposal";
 
+// -> when i create a proposal, and i dont refresh, if i vote, it doesnt update it automatically
+
 const Proposal = ({
   id,
   description,
@@ -67,10 +69,10 @@ const Proposal = ({
       </Box>
       <Button
         className={`${
-            executed 
-            ? "bg-gray-600" : 
-            (voteCount < minRequiredVote) && isDeadlinePassed
-            ? "bg-red-600" 
+          executed
+            ? "bg-gray-600"
+            : voteCount < minRequiredVote && isDeadlinePassed
+            ? "bg-red-600"
             : voteCount >= minRequiredVote
             ? "bg-green-700"
             : isVoted
@@ -78,13 +80,14 @@ const Proposal = ({
             : "bg-blue-600"
         } text-white font-bold w-full mt-4 p-4 rounded-md shadow-sm`}
         onClick={handleProposalVoteOrExecute}
-        disabled={isDeadlinePassed}
+        disabled={(voteCount < minRequiredVote && isDeadlinePassed) || executed}
       >
         {executed
           ? "Executed"
           : isExecuting
-          ? "Executing": 
-          (voteCount < minRequiredVote) && isDeadlinePassed ? "Expired"
+          ? "Executing"
+          : voteCount < minRequiredVote && isDeadlinePassed
+          ? "Expired"
           : voteCount >= minRequiredVote
           ? "Execute"
           : isVoted
